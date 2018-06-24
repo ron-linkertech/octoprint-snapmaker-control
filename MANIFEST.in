@@ -1,0 +1,4 @@
+include README.md
+recursive-include octoprint_snapmaker_control/templates *
+recursive-include octoprint_snapmaker_control/translations *
+recursive-include octoprint_snapmaker_control/static *
