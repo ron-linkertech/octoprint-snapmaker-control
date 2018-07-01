@@ -1,42 +1,61 @@
-# coding=utf-8
 from __future__ import absolute_import
 
 # ## This plugin will provide laser and CNC controls for the snapmaker printer / laser / cnc machine
-import sys
+import flask
 import octoprint.plugin
 from octoprint.settings import settings
-from octoprint_snapmaker_control.constants import TOOL_CONTROLS, NORMAL_CHILDREN, CNC_CHILDREN, LASER_CHILDREN, SECTION_NAME
+from octoprint_snapmaker_control.constants import \
+    TOOL_CONTROLS, NORMAL_CHILDREN, CNC_CHILDREN, LASER_CHILDREN, SECTION_NAME
 
 
 class SnapmakerControlPlugin(octoprint.plugin.SettingsPlugin,
                              octoprint.plugin.StartupPlugin,
                              octoprint.plugin.EventHandlerPlugin,
                              octoprint.plugin.AssetPlugin,
-                             octoprint.plugin.TemplatePlugin):
+                             octoprint.plugin.TemplatePlugin,
+                             octoprint.plugin.BlueprintPlugin):
+
+    @octoprint.plugin.BlueprintPlugin.route("/snapmaker", methods=["GET"])
+    def handleGet(self):
+        if not "text" in flask.request.values:
+            return flask.make_response("Expected a text to echo back.", 400)
+        return flask.request.values["text"]
+
+    @octoprint.plugin.BlueprintPlugin.route("/snapmaker", methods=["POST"])
+    def handlePost(self):
+        if not "text" in flask.request.values:
+            return flask.make_response("Expected a text to echo back.", 400)
+        return flask.request.values["text"]
 
     def get_assets(self):
         return dict(
-			js=["js/snapmaker_control.js"],
-			css=["css/snapmaker_control.css"],
-			less=["less/snapmaker_control.less"]
-		)
+            js=["js/snapmaker_control.js"],
+            css=["css/snapmaker_control.css"],
+            less=["less/snapmaker_control.less"]
+        )
+
+    def get_template_configs(self):
+        return [
+            dict(type="navbar", custom_bindings=True),
+            dict(type="settings", custom_bindings=False)
+        ]
 
     def get_update_information(self):
         return dict(
-			snapmaker_control=dict(
-				displayName="Snapmaker_control Plugin",
-				displayVersion=self._plugin_version,
+            snapmaker_control=dict(
+                displayName="Snapmaker_control Plugin",
+                displayVersion=self._plugin_version,
 
-				# version check: github repository
-				type="github_release",
-				user="ron-linkertech",
-				repo="octoprint-snapmaker-control",
-				current=self._plugin_version,
+                # version check: github repository
+                type="github_release",
+                user="ron-linkertech",
+                repo="octoprint-snapmaker-control",
+                current=self._plugin_version,
 
-				# update method: pip
-				pip="https://github.com/ron-linkertech/octoprint-snapmaker-control/archive/{target_version}.zip"
-			)
-		)
+                # update method: pip
+                pip="https://github.com/ron-linkertech/octoprint-snapmaker-control/archive/{target_version}.zip"
+            )
+        )
 
     def init(self):
         self.tools = TOOL_CONTROLS
@@ -49,18 +68,20 @@ class SnapmakerControlPlugin(octoprint.plugin.SettingsPlugin,
         # Disconnected
         method = getattr(self, 'on_event_' + event, None)
         if method is not None:
-            self._logger.info('Handle event {} {}'.format(event, payload))
+            self._logger.info('Handle event {} {}'.format(event.to_lowercase(), payload))
             method(payload)
         else:
             self._logger.info(
                 'Did not handle event {} {}'.format(event, payload))
 
-    def on_event_Connected(self, params):
+    def on_event_connected(self, params):
         self._logger.info('Connected!!!!!!')
         self.set_tool_status()
 
     def set_tool_status(self):
         """
+        Send a M1006 - get tool: "Tool Head: LASER" "Tool Head: 3DP" "Tool Head: CNC"
+        if not starting with "Tool Head":
         Send M105, and get response.
           If it has B0 and T300-499.99 then activate laser
           If it has B0 and T500+ then activate CNC
@@ -75,7 +96,7 @@ class SnapmakerControlPlugin(octoprint.plugin.SettingsPlugin,
         self._logger.debug('File selected!!!!!!')
 
     def on_event_MetadataAnalysisFinished(self, params):
-        self._logger.debug('File analized  !!!!')
+        self._logger.debug('File analyzed  !!!!')
 
     def on_event_Disconnected(self, params):
         self._logger.debug('Disconnected!!!!!!')
@@ -98,20 +119,21 @@ class SnapmakerControlPlugin(octoprint.plugin.SettingsPlugin,
         self.save_settings(self.get_settings_defaults()["controls"])
 
     def save_settings(self, my_controls):
-        s = settings()
-        controls = []
-        try:
-            controls = s.get(["controls"])
-        except:
-            self._logger.info('Error {}'.format(sys.exc_info()[0]))
-        # delete my old controls
-        for ix, item in enumerate(controls):
-            if item['name'] == SECTION_NAME:
-                del controls[ix]
-        # add my new controls
-        self._logger.info('                    {}'.format(my_controls))
-        s.set(["controls"], my_controls + controls)
-        s.save()
+        pass
+# s = settings()
+# controls = []
+# try:
+#     controls = s.get(["controls"])
+# except:
+#     self._logger.info('Error {}'.format(sys.exc_info()[0]))
+# # delete my old controls
+# for ix, item in enumerate(controls):
+#     if item['name'] == SECTION_NAME:
+#         del controls[ix]
+# # add my new controls
+# self._logger.info('                    {}'.format(my_controls))
+# s.set(["controls"], my_controls + controls)
+# s.save()
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
