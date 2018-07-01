@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 # ## This plugin will provide laser and CNC controls for the snapmaker printer / laser / cnc machine
 import flask
+import json
 import octoprint.plugin
 from octoprint.settings import settings
 from octoprint_snapmaker_control.constants import \
@@ -15,17 +16,25 @@ class SnapmakerControlPlugin(octoprint.plugin.SettingsPlugin,
                              octoprint.plugin.TemplatePlugin,
                              octoprint.plugin.BlueprintPlugin):
 
-    @octoprint.plugin.BlueprintPlugin.route("/snapmaker", methods=["GET"])
-    def handleGet(self):
-        if not "text" in flask.request.values:
-            return flask.make_response("Expected a text to echo back.", 400)
-        return flask.request.values["text"]
+    def __init__(self):
+        self.tools = TOOL_CONTROLS
+        self.tools[0]["children"] = NORMAL_CHILDREN
+        self.detected = False
 
-    @octoprint.plugin.BlueprintPlugin.route("/snapmaker", methods=["POST"])
+    @octoprint.plugin.BlueprintPlugin.route("/status", methods=["GET"])
+    def handleGet(self):
+        response = flask.make_response(self.status(), 200)
+        response.headers['content-type'] = 'application/json'
+        return response
+
+    @octoprint.plugin.BlueprintPlugin.route("/status", methods=["POST"])
     def handlePost(self):
         if not "text" in flask.request.values:
             return flask.make_response("Expected a text to echo back.", 400)
         return flask.request.values["text"]
+
+    def status(self):
+        return json.dumps({'status': self.detected})
 
     def get_assets(self):
         return dict(
@@ -60,6 +69,7 @@ class SnapmakerControlPlugin(octoprint.plugin.SettingsPlugin,
     def init(self):
         self.tools = TOOL_CONTROLS
         self.tools[0]["children"] = NORMAL_CHILDREN
+        self.detected = False
 
     def on_event(self, event, payload):
         # FileSelected - path, origin (local == ok to do boundry)
@@ -80,6 +90,9 @@ class SnapmakerControlPlugin(octoprint.plugin.SettingsPlugin,
 
     def set_tool_status(self):
         """
+        M1005 -
+          Firmware Version: Snapmaker-Base-2.2
+          Release Date: Mar 27 2018
         Send a M1006 - get tool: "Tool Head: LASER" "Tool Head: 3DP" "Tool Head: CNC"
         if not starting with "Tool Head":
         Send M105, and get response.
@@ -120,6 +133,8 @@ class SnapmakerControlPlugin(octoprint.plugin.SettingsPlugin,
 
     def save_settings(self, my_controls):
         pass
+
+
 # s = settings()
 # controls = []
 # try:

@@ -1,1 +1,9 @@
-/* TODO: Have your plugin's CSS files generated to here. */
+.snapmaker-1 {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: bolder;
+}
+
+.snapmaker-2 {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: normal;
+}
