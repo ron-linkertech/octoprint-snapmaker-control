@@ -9,9 +9,10 @@ $(function () {
 
     var self = this;
     //---------- variables -----------------
-    self.laser = ko.observable(false);
-    self.cnc = ko.observable(false);
-    self.fileLoaded = ko.observable(false);
+    self.laser = ko.observable(undefined);
+    self.cnc = ko.observable(undefined);
+    self.fileLoaded = ko.observable(undefined);
+    self.showEntry = ko.observable(undefined);
 
     // assign the injected viewModel parameters
     self.connectionViewModel = parameters[0];
@@ -21,15 +22,22 @@ $(function () {
     //---------  functions  ----------------
     self.onEventConnected = function(payload) {
       console.log('connected', payload);
+      self.cnc(false);
+      self.laser(false);
+      self.showEntry(false);
+      self.fileLoaded(false);
+      setTimeout(self.getSnapmakerInfo, 2000);
     };
 
-    self.onEventDisonnected = function(payload) {
-      console.log('disconnected', payload);
+    self.onEventDisconnected = function(payload) {
+      console.log('Disconnected', payload);
+      self.cnc(false);
+      self.laser(false);
+      self.showEntry(false);
     };
 
     self.selectAFunction = function (func) {
       console.log('Function: ', func);
-
     };
 
     self.getSnapmakerInfo = function () {
@@ -37,6 +45,17 @@ $(function () {
       console.log('calling ', OctoPrint.options);
       OctoPrint.get('plugin/snapmaker_control/status').then(function (response) {
         console.log('Snapmaker Status', response);
+        self.firmware = response.firmware;
+        self.tool = response.tool;
+        if (response.status === true) {
+          self.cnc(response.cnc);
+          self.laser(response.laser);
+          self.showEntry(true);
+        } else {
+          self.cnc(false);
+          self.laser(false);
+          self.showEntry(false);
+        }
       });
     };
 
@@ -45,14 +64,11 @@ $(function () {
         // console.log('status', o.state);
         console.log('Job Info:', o);
         if (o.state && o.state.indexOf("Offline") === 0) {
-          self.laser = false;
-          self.cnc = false;
+          self.cnc(false);
+          self.laser(false);
+          self.showEntry(false);
         }
-        else {
-          // detect laser, cnc
-        }
-        self.fileLoaded = (o.job.file.name != null);
-        // self.menuVisible = true;
+        self.fileLoaded(o.job.file.name != null);
         self.setFunctions();
       });
     };

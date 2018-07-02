@@ -1,28 +1,24 @@
 from __future__ import absolute_import
 
+import json
+
 # ## This plugin will provide laser and CNC controls for the snapmaker printer / laser / cnc machine
 import flask
-import json
 import octoprint.plugin
 from octoprint.settings import settings
-from octoprint_snapmaker_control.constants import \
-    TOOL_CONTROLS, NORMAL_CHILDREN, CNC_CHILDREN, LASER_CHILDREN, SECTION_NAME
 
-
-class SnapmakerControlPlugin(octoprint.plugin.SettingsPlugin,
-                             octoprint.plugin.StartupPlugin,
+class SnapmakerControlPlugin(octoprint.plugin.StartupPlugin,
                              octoprint.plugin.EventHandlerPlugin,
                              octoprint.plugin.AssetPlugin,
                              octoprint.plugin.TemplatePlugin,
                              octoprint.plugin.BlueprintPlugin):
 
     def __init__(self):
-        self.tools = TOOL_CONTROLS
-        self.tools[0]["children"] = NORMAL_CHILDREN
-        self.detected = False
+        self.init()
 
     @octoprint.plugin.BlueprintPlugin.route("/status", methods=["GET"])
     def handleGet(self):
+        self._logger.info('Get snapmaker info called')
         response = flask.make_response(self.status(), 200)
         response.headers['content-type'] = 'application/json'
         return response
@@ -34,7 +30,13 @@ class SnapmakerControlPlugin(octoprint.plugin.SettingsPlugin,
         return flask.request.values["text"]
 
     def status(self):
-        return json.dumps({'status': self.detected})
+        return json.dumps({
+            'status': self.detected,
+            'cnc': self.cnc,
+            'laser': self.laser,
+            'firmware': self.firmware_line,
+            'tool': self.tool_line
+        })
 
     def get_assets(self):
         return dict(
@@ -67,18 +69,20 @@ class SnapmakerControlPlugin(octoprint.plugin.SettingsPlugin,
         )
 
     def init(self):
-        self.tools = TOOL_CONTROLS
-        self.tools[0]["children"] = NORMAL_CHILDREN
+        self.firmware_line = ''
+        self.tool_line = ''
         self.detected = False
+        self.cnc = False
+        self.laser = False
 
     def on_event(self, event, payload):
         # FileSelected - path, origin (local == ok to do boundry)
         # MetadataAnalysisFinished path,origin, result-> printingArea (maxZ, etc (min/max)(X/Y/Z))
         # Connected
         # Disconnected
-        method = getattr(self, 'on_event_' + event, None)
+        method = getattr(self, 'on_event_' + event.lower(), None)
         if method is not None:
-            self._logger.info('Handle event {} {}'.format(event.to_lowercase(), payload))
+            self._logger.info('Handle event {} {}'.format(event.lower(), payload))
             method(payload)
         else:
             self._logger.info(
@@ -87,6 +91,9 @@ class SnapmakerControlPlugin(octoprint.plugin.SettingsPlugin,
     def on_event_connected(self, params):
         self._logger.info('Connected!!!!!!')
         self.set_tool_status()
+
+    def on_printer_add_message(self, data):
+        self._logger.info('Printer message', data)
 
     def set_tool_status(self):
         """
@@ -100,61 +107,57 @@ class SnapmakerControlPlugin(octoprint.plugin.SettingsPlugin,
           If it has B0 and T500+ then activate CNC
           else activate "normal"
         """
-        TOOL_CONTROLS[0]["children"] = NORMAL_CHILDREN
-        TOOL_CONTROLS[0]["children"] = CNC_CHILDREN
-        TOOL_CONTROLS[0]["children"] = LASER_CHILDREN
-        self.save_settings(TOOL_CONTROLS)
+        self._logger.info('Sending M1005 and M1006')
+        self._printer.commands('M1005', 'M1005')
+        self._printer.commands('M1006', 'M1006')
 
-    def on_event_FileSelected(self, params):
-        self._logger.debug('File selected!!!!!!')
+    def handle_responses(self, comm, line, *args, **kwargs):
+        self._logger.info('LINE {}'.format(line))
+        # 1005 response
+        if "Snapmaker" in line:
+            self.firmware_line = line
+            self.detected = True
+        else:
+            # 1006 response
+            if "Tool Head:" in line:
+                self.tool_line = line
+                if "CNC" in line:
+                    self.cnc = True
+                    self.laser = False
+                else:
+                    if "LASER" in line:
+                        self.cnc = False
+                        self.laser = True
+                    else:
+                        self.cnc = False
+                        self.laser = False
 
-    def on_event_MetadataAnalysisFinished(self, params):
-        self._logger.debug('File analyzed  !!!!')
+        return line
 
-    def on_event_Disconnected(self, params):
-        self._logger.debug('Disconnected!!!!!!')
-        self.set_tool_status()
+    def on_event_fileselected(self, params):
+        self._logger.info('File selected!!!!!!')
 
-    def get_settings_defaults(self):
-        self._logger.info("get_settings_default")
-        TOOL_CONTROLS[0]["children"] = NORMAL_CHILDREN
-        self._logger.info('Get default {}'.format(TOOL_CONTROLS))
-        default_settings = {"controls": TOOL_CONTROLS}
-        return default_settings
+    def on_event_metadataanalysisfinished(self, params):
+        self._logger.info('File analyzed  !!!!', params)
 
-    def on_settings_save(self, data):
-        self._logger.info('saving settings')
-        s = settings()
-        s.set(["controls"], data["controls"])
+    def on_event_disconnected(self, params):
+        self._logger.info('Disconnected!!!!!!')
+        self.cnc = False
+        self.laser = False
+        self.detected = False
 
     def on_after_startup(self):
-        self._logger.info("after startup. Adding to controls")
-        self.save_settings(self.get_settings_defaults()["controls"])
-
-    def save_settings(self, my_controls):
-        pass
-
-
-# s = settings()
-# controls = []
-# try:
-#     controls = s.get(["controls"])
-# except:
-#     self._logger.info('Error {}'.format(sys.exc_info()[0]))
-# # delete my old controls
-# for ix, item in enumerate(controls):
-#     if item['name'] == SECTION_NAME:
-#         del controls[ix]
-# # add my new controls
-# self._logger.info('                    {}'.format(my_controls))
-# s.set(["controls"], my_controls + controls)
-# s.save()
+        self._logger.info("after startup.")
 
 
 # If you want your plugin to be registered within OctoPrint under a different name than what you defined in setup.py
 # ("OctoPrint-PluginSkeleton"), you may define that here. Same goes for the other metadata derived from setup.py that
 # can be overwritten via __plugin_xyz__ control properties. See the documentation for that.
 __plugin_name__ = "Snapmaker Control"
+__plugin_description__ = "Control for Snapmaker printer's CNC and laser modules"
+__plugin_license__ = "ISC"
+__plugin_url__ = "https://ron-linkertech.github.io/octoprint-snapmaker-control/"
+__plugin_author__ = "Ron Lawrence"
 
 
 def __plugin_load__():
@@ -163,5 +166,6 @@ def __plugin_load__():
 
     global __plugin_hooks__
     __plugin_hooks__ = {
-        "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information
+        "octoprint.plugin.softwareupdate.check_config": __plugin_implementation__.get_update_information,
+        "octoprint.comm.protocol.gcode.received": __plugin_implementation__.handle_responses
     }
