@@ -25,6 +25,7 @@ $(function () {
       self.cnc(false);
       self.laser(false);
       self.showEntry(false);
+      self.detachControls();
       self.fileLoaded(false);
       setTimeout(self.getSnapmakerInfo, 2000);
     };
@@ -34,10 +35,27 @@ $(function () {
       self.cnc(false);
       self.laser(false);
       self.showEntry(false);
+      self.detachControls();
     };
 
     self.selectAFunction = function (func) {
       console.log('Function: ', func);
+    };
+
+    self.detachControls = function () {
+      var snapmaker=$("#snapmaker_controls");
+      if (snapmaker) {
+        snapmaker.detach();
+      }
+    };
+
+    self.attachControls = function () {
+      var snapmaker=$("#snapmaker_controls");
+      if (snapmaker) {
+        if (snapmaker.parent() !== self.customControlsDiv) {
+          self.customControlsDiv.append(snapmaker);
+        }
+      }
     };
 
     self.getSnapmakerInfo = function () {
@@ -51,10 +69,12 @@ $(function () {
           self.cnc(response.cnc);
           self.laser(response.laser);
           self.showEntry(true);
+          self.attachControls();
         } else {
           self.cnc(false);
           self.laser(false);
           self.showEntry(false);
+          self.detachControls();
         }
       });
     };
@@ -87,10 +107,10 @@ $(function () {
 
     //------- startup code -------------
     self.setFunctions();
-    divControls = $("#control-jog-custom"); // add to this id's div (insert at top?)
+    self.customControlsDiv = $("#control"); // add to this id's div (insert at bottom?)
     self.getSnapmakerInfo();
 
-    console.log('This is my VM', self, divControls);
+    console.log('This is my VM', self);
     self.getJobInfo();
   }
 
@@ -103,6 +123,6 @@ $(function () {
     // ViewModels your plugin depends on, e.g. loginStateViewModel, settingsViewModel, ...
     dependencies: ["connectionViewModel", "navigationViewModel", "settingsViewModel"],
     // Elements to bind to, e.g. #settings_plugin_snapmaker_control, #tab_plugin_snapmaker_control, ...
-    elements: ["#snapmaker_menu" /* ... */]
+    elements: ["#snapmaker_menu", "snapmaker_controls" /* ... */]
   });
 });

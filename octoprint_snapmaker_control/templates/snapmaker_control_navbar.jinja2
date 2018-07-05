@@ -1,9 +1,10 @@
 <li id="snapmaker_menu" class="dropdown" data-bind="visible: showEntry">
-    <a class="dropdown-toggle" data-toggle="dropdown" ><span class="snapmaker-1">snap</span><span class="snapmaker-2">maker</span><span class="caret"></span>
+    <a class="dropdown-toggle" data-toggle="dropdown">
+        <span ><img class="snapmaker-image" src="/plugin/snapmaker_control/static/img/snapmaker.svg"/></span><span class="caret"></span>
     </a>
     <ul class="dropdown-menu" data-bind="foreach: functions">
         <li data-bind="visible: visible">
-            <a  data-bind="text: name, click: $root.selectAFunction"></a>
+            <a data-bind="text: name, click: $root.selectAFunction"></a>
         </li>
     </ul>
 </li>

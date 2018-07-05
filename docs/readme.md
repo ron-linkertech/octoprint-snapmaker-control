@@ -1,5 +1,7 @@
 # OctoPrint - Snapmaker Control
 
+This plugin is for the Snapmaker 3-in-one printer/CNC/Laser. It was not developed by Snapmaker.
+
 This plugin will allow users to use the CNC and laser attachments of the snapmaker through octopi.
 
 If the laser is detected it will allow you to turn the laser on and off (setting the power). 
@@ -21,3 +23,7 @@ the plugin manager.
 ## Configuration
 
 **TODO:** Describe your plugin's configuration options (if any).
+
+====
+
+Snapmaker image Copyright(c) 2017 Snapmaker. Used with permission

@@ -7,3 +7,9 @@
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
     font-weight: normal;
 }
+
+.snapmaker-image {
+    width: 100px;
+    margin-top: -10px;
+    margin-bottom: -10px;
+}

@@ -48,6 +48,7 @@ class SnapmakerControlPlugin(octoprint.plugin.StartupPlugin,
     def get_template_configs(self):
         return [
             dict(type="navbar", custom_bindings=True),
+            dict(type="generic", custom_bindings=True),
             dict(type="settings", custom_bindings=False)
         ]
 
