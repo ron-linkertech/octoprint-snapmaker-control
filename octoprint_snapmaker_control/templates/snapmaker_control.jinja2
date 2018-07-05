@@ -1,3 +1,32 @@
 <div id="snapmaker_controls" data-bind="visible: showEntry">
-    <span ><img class="snapmaker-image" src="/plugin/snapmaker_control/static/img/snapmaker.svg"/></span>
+    <hr/>
+    <span><img class="snapmaker-image-lg" src="/plugin/snapmaker_control/static/img/snapmaker.svg"/></span>
+
+    <div data-bind="visible: laser">
+        <h4>Laser power (0-100)</h4>
+        <div class="slider slider-horizontal" style="width: 300px;">
+            <div class="slider-track">
+                <div class="slider-selection" style="left: 0%; width: 50%;"></div>
+                <div class="slider-handle round" style="left: 50%;"></div>
+                <div class="slider-handle round hide" style="left: 0%;"></div>
+            </div>
+            <div class="tooltip top hide" style="top: -24px; left: -5px;">
+                <div class="tooltip-arrow"></div>
+                <div class="tooltip-inner">100</div>
+            </div>
+            <input type="number" style="width: 153px;"
+                   data-bind="slider: {min: 0, max: 100, step: 1, value: toolPercentage, tooltip: 'hide'}">
+        </div>
+        <input type="number" class="input-mini text-right" style="width: 45px; margin-top: 10px;"
+               data-bind="value: toolPercentage">
+        <button class="btn" style="width: 40px" data-bind="click: function() { $root.sendOnCommand() }">On</button>
+        <button class="btn" style="width: 40px" data-bind="click: function() { $root.sendOffCommand() }">Off
+        </button>
+    </div>
+    <div data-bind="visible: cnc">
+        <h4>CNC Tool</h4>
+        <button class="btn" style="width: 40px" data-bind="click: function() { $root.sendOnCommand() }">On</button>
+        <button class="btn" style="width: 40px" data-bind="click: function() { $root.sendOffCommand() }">Off
+        </button>
+    </div>
 </div>

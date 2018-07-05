@@ -8,8 +8,18 @@
     font-weight: normal;
 }
 
-.snapmaker-image {
+
+.snapmaker-image-lg, .snapmaker-image {
     width: 100px;
-    margin-top: -10px;
     margin-bottom: -10px;
+}
+
+.snapmaker-image-lg {
+    width: 200px;
+}
+#snapmaker_controls .slider-handle {
+    width: 14px;
+    height: 14px;
+    margin-left: -7px;
+    margin-top: -3px;
 }
