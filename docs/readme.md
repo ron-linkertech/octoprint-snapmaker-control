@@ -12,18 +12,18 @@ In the future, plans are to be able to set origin and run boundary based on the 
 
 ## Setup
 
-Install via the bundled [Plugin Manager](https://github.com/foosel/OctoPrint/wiki/Plugin:-Plugin-Manager)
-or manually using this URL:
+Install via the bundled [Plugin Manager](https://github.com/foosel/OctoPrint/wiki/Plugin:-Plugin-Manager). 
+
+Right now, you must manually install it using this URL:
 
     https://github.com/ron-linkertech/octoprint-snapmaker-control/archive/master.zip
 
-**TODO:** Describe how to install your plugin, if more needs to be done than just installing it via pip or through
-the plugin manager.
+When it is through "beta" testing, I will register it with Octoprint and you will be able to install it through the
+search function in plugin manager.
 
 ## Configuration
 
-**TODO:** Describe your plugin's configuration options (if any).
 
-====
+----
 
 Snapmaker image Copyright(c) 2017 Snapmaker. Used with permission
