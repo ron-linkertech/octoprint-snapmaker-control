@@ -1,9 +1,21 @@
-<div id="snapmaker_controls" data-bind="visible: showEntry">
+<div id="snapmaker_controls" data-bind="visible: showEntry" class="wide">
     <hr/>
-    <span><img class="snapmaker-image-lg" src="/plugin/snapmaker_control/static/img/snapmaker.svg"/></span>
-
-    <div data-bind="visible: laser">
-        <h4>Laser power (0-100)</h4>
+    <span class="wide"><img class="snapmaker-image-lg" src="/plugin/snapmaker_control/static/img/snapmaker.svg"/></span>
+    <div class="half padding-10">
+        <button class="btn" style="width: 80px"
+                data-bind="click: function() { $root.sendSetOriginCommand() }, enable: $root.bounds">Set Origin</button>
+        <button class="btn" style="width: 80px"
+                data-bind="click: function() { $root.sendGoOriginCommand() }, enable: $root.bounds">Go to Origin</button>
+        <button class="btn" style="width: 80px"
+                data-bind="click: function() { $root.sendBoundaryCommands() }, enable: $root.bounds">Run boundary</button>
+    </div>
+    <div data-bind="visible: laser" class="half">
+        <p><b>Laser power (0-100)</b></p>
+        <button class="btn" style="width: 40px" data-bind="click: function() { $root.sendOnCommand() }">On</button>
+        <button class="btn" style="width: 40px" data-bind="click: function() { $root.sendOffCommand() }">Off
+        </button>
+        <input type="number" class="input-mini text-right" style="width: 45px; margin-top: 10px;"
+               data-bind="value: toolPercentage">
         <div class="slider slider-horizontal" style="width: 300px;">
             <div class="slider-track">
                 <div class="slider-selection" style="left: 0%; width: 50%;"></div>
@@ -17,14 +29,9 @@
             <input type="number" style="width: 153px;"
                    data-bind="slider: {min: 0, max: 100, step: 1, value: toolPercentage, tooltip: 'hide'}">
         </div>
-        <input type="number" class="input-mini text-right" style="width: 45px; margin-top: 10px;"
-               data-bind="value: toolPercentage">
-        <button class="btn" style="width: 40px" data-bind="click: function() { $root.sendOnCommand() }">On</button>
-        <button class="btn" style="width: 40px" data-bind="click: function() { $root.sendOffCommand() }">Off
-        </button>
     </div>
-    <div data-bind="visible: cnc">
-        <h4>CNC Tool</h4>
+    <div data-bind="visible: cnc" class="half">
+        <p><b>CNC Tool</b></p>
         <button class="btn" style="width: 40px" data-bind="click: function() { $root.sendOnCommand() }">On</button>
         <button class="btn" style="width: 40px" data-bind="click: function() { $root.sendOffCommand() }">Off
         </button>

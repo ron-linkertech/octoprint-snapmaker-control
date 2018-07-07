@@ -89,6 +89,19 @@ class SnapmakerControlPlugin(octoprint.plugin.StartupPlugin,
             self._logger.info(
                 'Did not handle event {} {}'.format(event, payload))
 
+    # {'data': {'PROTOCOL_VERSION': '1.0', 'FIRMWARE_NAME': ' Virtual Marlin 1.0'}, 'name': ' Virtual Marlin 1.0'}
+
+    def on_event_firmwaredata(self, params):
+        self._logger.info('Firmware data:{}'.format(params))
+        if 'name' in params:
+            name = params['name']
+            if name is not None and 'Virtual Marlin' in name:
+                # pretend to be a snapmaker for testing
+                self._logger.info('Detected virtual printer. Pretending to be a Snapmaker laser')
+                self.detected = True
+                self.cnc = False
+                self.laser = True
+
     def on_event_connected(self, params):
         self._logger.info('Connected!!!!!!')
         self.set_tool_status()
@@ -113,15 +126,17 @@ class SnapmakerControlPlugin(octoprint.plugin.StartupPlugin,
         self._printer.commands('M1006', 'M1006')
 
     def handle_responses(self, comm, line, *args, **kwargs):
-        self._logger.info('LINE {}'.format(line))
         # 1005 response
         if "Snapmaker" in line:
+            self._logger.infd('LINE {}'.format(line))
             self.firmware_line = line
             self.detected = True
         else:
             # 1006 response
             if "Tool Head:" in line:
+                self._logger.info('LINE {}'.format(line))
                 self.tool_line = line
+                self.detected = True
                 if "CNC" in line:
                     self.cnc = True
                     self.laser = False
@@ -137,6 +152,7 @@ class SnapmakerControlPlugin(octoprint.plugin.StartupPlugin,
 
     def on_event_fileselected(self, params):
         self._logger.info('File selected!!!!!!')
+
 
     def on_event_metadataanalysisfinished(self, params):
         self._logger.info('File analyzed  !!!!', params)
