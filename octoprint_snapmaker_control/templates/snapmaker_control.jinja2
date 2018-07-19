@@ -29,6 +29,9 @@
             <input type="number" style="width: 153px;"
                    data-bind="slider: {min: 0, max: 100, step: 1, value: toolPercentage, tooltip: 'hide'}">
         </div>
+        <br/>
+        <button class="btn" data-bind="click: function() { $root.sendOnCommand(); $root.sendOffCommand(); }">Set (on / off)</button>
+        <button class="btn" data-bind="click: function() { $root.sendFocus(); }">Focus (6%)</button>
     </div>
     <div data-bind="visible: cnc" class="half">
         <p><b>CNC Tool</b></p>

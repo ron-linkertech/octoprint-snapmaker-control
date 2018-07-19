@@ -156,6 +156,12 @@ class SnapmakerControlPlugin(octoprint.plugin.StartupPlugin,
 
     def on_event_metadataanalysisfinished(self, params):
         self._logger.info('File analyzed  !!!!', params)
+        if 'result' not in params or \
+                'printingArea' not in params['result'] or \
+                'minX' not in params['result']['printingArea'] or \
+                params['result']['printingArea']['minX'] is None:
+            self._logger.error('Analysis was not able to find bounds..')
+        # TODO: set some state for UI to know this...
 
     def on_event_disconnected(self, params):
         self._logger.info('Disconnected!!!!!!')

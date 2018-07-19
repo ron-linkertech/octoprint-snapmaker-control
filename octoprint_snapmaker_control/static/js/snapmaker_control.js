@@ -73,6 +73,10 @@ $(function () {
       console.log('Function: ', func);
     };
 
+    self.sendFocus = function () {
+      OctoPrint.control.sendGcode("M3 P6 S15");
+    };
+
     self.sendOnCommand = function () {
       if (self.cnc()) {
         self.isOn = false;
@@ -95,6 +99,7 @@ $(function () {
     self.sendGoOriginCommand = function () {
       console.log('Go Origin');
       var feed = 3000; // for now... should be setting
+      OctoPrint.control.sendGcode("G90");
       OctoPrint.control.sendGcode("G0 X0 Y0 Z0 F"+feed);
     };
 
@@ -106,12 +111,12 @@ $(function () {
         var gcodeArr = [
           "G90",
           "G92 X0 Y0 Z0",
-          "G1 X" + bounds.minX + " Y" + bounds.minY + " F" + feed,
-          "G1 X" + bounds.minX + " Y" + bounds.maxY + " F" + feed,
-          "G1 X" + bounds.maxX + " Y" + bounds.maxY + " F" + feed,
-          "G1 X" + bounds.maxX + " Y" + bounds.minY + " F" + feed,
-          "G1 X" + bounds.minX + " Y" + bounds.minY + " F" + feed,
-          "G1 X0.00 Y0.00 Z0.00 F" + feed];
+          "G0 X" + bounds.minX + " Y" + bounds.minY + " F" + feed,
+          "G0 X" + bounds.minX + " Y" + bounds.maxY + " F" + feed,
+          "G0 X" + bounds.maxX + " Y" + bounds.maxY + " F" + feed,
+          "G0 X" + bounds.maxX + " Y" + bounds.minY + " F" + feed,
+          "G0 X" + bounds.minX + " Y" + bounds.minY + " F" + feed,
+          "G0 X0.00 Y0.00 Z0.00 F" + feed];
         console.log(gcodeArr);
         OctoPrint.control.sendGcode(gcodeArr);
       }
