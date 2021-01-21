@@ -1,5 +1,7 @@
 # OctoPrint - Snapmaker Control
-
+  
+  (-- Sorry all, I have not upgraded to snapmaker 2 and currently am without the ability to use my snapmaker 1. If anyone wants to fork this and take it over, please feel free to! --)
+  
 This plugin is for the Snapmaker 3-in-one printer/CNC/Laser. It was not developed by Snapmaker.
 
 This plugin will allow users to use the CNC and laser attachments of the snapmaker through octopi.
